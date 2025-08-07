@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pinecone-client
+sentence-transformers
+mysql-connector-python
+python-dotenv
+requests

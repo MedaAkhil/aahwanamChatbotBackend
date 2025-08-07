@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
-import pinecone
+from pinecone import Pinecone
 import mysql.connector
 import uuid
 import os
@@ -24,8 +24,9 @@ MYSQL_DB = os.getenv("MYSQL_DATABASE")
 app = FastAPI()
 
 # Init Pinecone
-pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
-pinecone_index = pinecone.Index("aahwanam-index")  # Must be created with dim=384
+pc = Pinecone(api_key=PINECONE_API_KEY)#, 
+            #   environment=PINECONE_ENV)
+pinecone_index = pc.Index("aahwanam")  # Must be created with dim=384
 
 # Init MySQL
 db = mysql.connector.connect(
@@ -42,13 +43,18 @@ def get_embedding(text):
     return embedding_model.encode(text).tolist()
 
 def query_pinecone(user_input):
+    print("pinecone query started")
     vector = get_embedding(user_input)
     result = pinecone_index.query(vector=vector, top_k=5, include_metadata=True)
-    return [match['metadata']['text'] for match in result['matches']]
+    print(f"pinecone query ended{result}")
+    return [match.metadata['text'] for match in result.matches if match.metadata and 'text' in match.metadata]
+
 
 def get_services_from_mysql():
+    print("Mysql query started")
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT name, base_price, description FROM services")
+    cursor.execute("SELECT service_name, description FROM services")
+    print("mysql query ended")
     return cursor.fetchall()
 
 def save_chat(user_id, user_msg, bot_msg):
@@ -96,10 +102,10 @@ async def chat(request: Request):
     # Step 2: Get live service data
     service_data = get_services_from_mysql()
     service_text = "\n".join([
-        f"{svc['name']} – ₹{svc['base_price']} ({svc['description']})"
+        f"{svc['service_name']} – ({svc['description']})"
         for svc in service_data
     ])
-
+    print(f"context_text:{context_text}")
     # Step 3: Build final prompt
     prompt = f"""
 You are a customer support chatbot for the Aahwanam event-planning app. 
@@ -127,15 +133,20 @@ Respond in the following format if applicable:
 ^silver ₹8000/-
 ...
 
-5. Always end with 1-2 questions to keep conversation going.
-6. If irrelevant, say: "Sorry, I don’t know about that. Please ask something related to Aahwanam."
+5. If user asks about packages show:
+&eventpackages
+^silver ₹8000/-
+...
+
+6. Always end with 1-2 questions to keep conversation going.
+7. If irrelevant, say: "Sorry, I don’t know about that. Please ask something related to Aahwanam."
 """
 
     # Step 4: Call Groq
     bot_reply = send_to_groq(prompt)
 
     # Step 5: Save to DB
-    save_chat(user_id, user_input, bot_reply)
+    # save_chat(user_id, user_input, bot_reply)
 
     return {"reply": bot_reply}
 

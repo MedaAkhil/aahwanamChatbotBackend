@@ -10,7 +10,18 @@ client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1"
 )
-
+def sendGroqRequest(prompt, systemPrompt, model="llama3-8b-8192"):
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": systemPrompt},
+                {"role": "user", "content": prompt}
+            ],
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
 def askGroqWhichTable(prompt, model="llama3-8b-8192"):
     system_prompt = (
         "You are a bot for Aahwanam platform. You only have to decide the tables to choose based on the user prompt "

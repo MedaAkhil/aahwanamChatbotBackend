@@ -10,6 +10,8 @@ import json
 
 from testbotOnlyGroq import askGroqWhichTable
 from dbHelper import connect_to_database
+import dbHelper
+import testbotOnlyGroq
 
 # Load env variables
 load_dotenv()
@@ -158,72 +160,127 @@ def send_to_groq(prompt):
 
 
 
+
+
+
+
 def similaritySearchPineConeQueryHelper(pcobject, userinput):
-    print("pinecone query started")
+    # print("pinecone query started")
     vector = get_embedding(userinput)
     result = pcobject.query(vector=vector, top_k=5, include_metadata=True)
-    print(f"pinecone query ended{result}")
+    # print(f"pinecone query ended {result}")
     return [match.metadata['text'] for match in result.matches if match.metadata and 'text' in match.metadata]
+
 
 if __name__ == "__main__":
     conn = connect_to_database()
     pc = Pinecone(api_key=PINECONE_API_KEY)#, 
-    pcahwanamContextIndex = pc.Index("aahwanam")
+    pcahwanamContextIndex = pc.Index("aahwanamcontext")
+    print("Connected To VectorIndex")
+    messages = []
     while True:
         prompt = input("You:")
-
+        messages.append("User: "+prompt)
 
         realtimedata = []
         table = askGroqWhichTable(prompt)
 
         if '1' in table:
-            pass
+            realtimedata.append(dbHelper.print_joined_service_categories(conn))
         if '2' in table:
-            pass
+            realtimedata.append(dbHelper.getServicePackages(conn))
         if '3' in table:
             cityorstste = table.split('^')[-1].strip('] ')
+            realtimedata.append(dbHelper.getservicesbylocation(conn, cityorstste))
         
 
 
         context_chunks = similaritySearchPineConeQueryHelper(pcahwanamContextIndex, prompt)
         context_text = "\n".join(context_chunks)
-        print(f"this is the data received from the PineCone for the user prompt: {context_text}")
+        # print(f"these are the content chunks:{context_text}")
+        # print(f"this is the data received from the PineCone for the user prompt: {context_text}")
+        # print(f"this is the Realtime data received from SQL data context: {realtimedata}")
 
-        prompt = f"""
-        You are a customer support chatbot for the Aahwanam event-planning app. 
-        Use only the context and services below to answer the user's prompt.
+        # SystemPromptForFinalLLMRequestprompt = 
+        # f"""
+        # You are a customer support chatbot for the Aahwanam event-planning app. 
+        # Use only the context and services below to answer the user's prompt.
 
-        This is the context data for the aahwanam platform => {context_text}
+        # This is the context data for the aahwanam platform => {context_text}
 
-        This is the realtime data about the services (or) the budget friendly packages offered by the 
-        {realtimedata}
+        # This is the realtime data about the services (or) the budget friendly packages offered by the 
+        # {realtimedata}
+        # {"this is the user chat history with the bot: ".join(messages)}
+        # User prompt: "{prompt}"
 
-        User prompt: "{prompt}"
+        # Respond in the following format if applicable:
+        # 1. Reply casually to greetings.
+        # 2. If no services are mentioned, say: "Aahwanam helps you book services like Décor, Photography, Catering, and more for all occasions."
+        # 3. If user asks for a service, respond with a service list:
+        # &services
+        # ^servicename    ₹price    includes
 
-        Respond in the following format if applicable:
-        1. Reply casually to greetings.
-        2. If no services are mentioned, say: "Aahwanam helps you book services like Décor, Photography, Catering, and more for all occasions."
-        3. If user asks for a service, respond with a service list:
-        &services
-        ^servicename    ₹price    includes
+        # 4. If user asks about event types (wedding, birthday), show:
+        # &services
+        # ...
+        # &eventpackages
+        # ^silver ₹8000/-
+        # ...
 
-        4. If user asks about event types (wedding, birthday), show:
-        &services
-        ...
-        &eventpackages
-        ^silver ₹8000/-
-        ...
+        # 5. If user asks about packages show:
+        # &eventpackages
+        # ^silver ₹8000/-
+        # ...
 
-        5. If user asks about packages show:
-        &eventpackages
-        ^silver ₹8000/-
-        ...
+        # 6. Always end with 1-2 questions to keep conversation going.
+        # 7. If irrelevant, say: "Sorry, I don’t know about that. Please ask something related to Aahwanam."
+        # """
 
-        6. Always end with 1-2 questions to keep conversation going.
-        7. If irrelevant, say: "Sorry, I don’t know about that. Please ask something related to Aahwanam."
-        """
-        
+        SystemPromptForFinalLLMRequestprompt = f"""
+You are a customer support chatbot for the Aahwanam event-planning app. 
+Keep answers **short, minimal text, and mostly in list format**.
 
+This is the context data for the Aahwanam platform => {context_text}
+
+This is the realtime data about the services or budget-friendly packages offered => {realtimedata}
+
+User chat history: {" | ".join(messages)}
+User prompt: "{prompt}"
+
+Response rules:
+1. Keep replies concise. Avoid long paragraphs.
+2. If user asks about services, list only **top 4 relevant services** in this format:
+^Services
+&servicename – ₹price – includes
+&servicename – ₹price – includes
+&servicename – ₹price – includes
+&servicename – ₹price – includes
+
+3. If user asks about event types (wedding, birthday), show services + packages like this:
+^Services
+&Décor – ₹5000 – includes flowers
+&Photography – ₹8000 – includes candid photos
+^EventPackages
+&Silver – ₹8000 – includes Décor + Photography
+&Gold – ₹15000 – includes Décor + Photography + Catering
+
+4. If user asks only about packages, respond:
+^EventPackages
+&Silver – ₹8000 – ...
+&Gold – ₹15000 – ...
+&Platinum – ₹25000 – ...
+
+5. If no services are mentioned, say:
+"Aahwanam helps you book services like Décor, Photography, Catering, and more for all occasions."
+
+6. Always end response with 1 short follow-up question to keep conversation going.
+7. If irrelevant, say:
+"Sorry, I don’t know about that. Please ask something related to Aahwanam."
+"""
+
+        # print(f"=============================>{SystemPromptForFinalLLMRequestprompt}")
+        BotResponse = "Bot: "+testbotOnlyGroq.sendGroqRequest(prompt, SystemPromptForFinalLLMRequestprompt) 
+        print("Bot:"+BotResponse)
 
 
 

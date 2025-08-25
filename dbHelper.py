@@ -48,11 +48,11 @@ def run_query(connection, query):
         cursor.close()
 
 
-
+#region DB Query Functions Region
 
 def print_joined_service_categories(connection):
-    print("\n🔍 Service and Categories:")
-    print("=" * 50)
+    # print("\n🔍 Service and Categories:")
+    # print("=" * 50)
 
     # query = """
     # SELECT 
@@ -89,12 +89,14 @@ ORDER BY
     columns, data = run_query(connection, query)
 
     if columns and data:
-        print(" | ".join(columns))
-        print("-" * 50)
+        output = ["\n🔍 Service and Categories:", "=" * 50]
+        output.append(" | ".join(columns))
+        output.append("-" * 50)
         for row in data:
-            print(" | ".join(str(item) if item is not None else "NULL" for item in row))
+            output.append(" | ".join(str(item) if item is not None else "NULL" for item in row))
+        return "\n".join(output)
     else:
-        print("⚠️ No data found for joined query.")
+        return "⚠️ No data found for joined query."
 
 
 
@@ -118,21 +120,22 @@ GROUP BY
     vsl.city, vsl.state;
 
 """
-    print(query)
     columns, data = run_query(conn, query)
 
     if columns and data:
-        print(" | ".join(columns))
-        print("-" * 50)
+        output = [f"\n📍 Services in '{cityorstatename}':", "=" * 50]
+        output.append(" | ".join(columns))
+        output.append("-" * 50)
         for row in data:
-            print(" | ".join(str(item) if item is not None else "NULL" for item in row))
+            output.append(" | ".join(str(item) if item is not None else "NULL" for item in row))
+        return "\n".join(output)
     else:
-        print("⚠️ No data found for joined query.")
+        return f"⚠️ No data found for '{cityorstatename}'."
 
 
 
 
-def getServicePackages(Query):
+def getServicePackages(conn):
     query = """
     SELECT 
         package_name, 
@@ -145,9 +148,11 @@ def getServicePackages(Query):
     columns, data = run_query(conn, query)
 
     if columns and data:
-        print(" | ".join(columns))
-        print("-" * 50)
+        output = ["\n📦 Service Packages:", "=" * 50]
+        output.append(" | ".join(columns))
+        output.append("-" * 50)
         for row in data:
-            print(" | ".join(str(item) if item is not None else "NULL" for item in row))
+            output.append(" | ".join(str(item) if item is not None else "NULL" for item in row))
+        return "\n".join(output)
     else:
-        print("⚠️ No data found for service packages.")
+        return "⚠️ No data found for service packages."

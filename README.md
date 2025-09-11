@@ -26,10 +26,7 @@ This is a CLI-based chatbot backend for the Aahwanam platform that uses Groq's L
 
 6. **Groq API Call**:  
    The constructed prompt is sent to Groq’s LLaMA3 model, and the response is printed as the bot's reply.
-
-7. **Loop Continues**:  
-   The conversation continues until the user exits manually.
-
+   
 ---
 
 ## 🚀 How to Run This Project

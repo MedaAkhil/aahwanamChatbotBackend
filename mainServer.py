@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
-from pinecone import Pinecone
+# from pinecone import Pinecone
 import os
 import requests
 from datetime import datetime
-import base64
+# import base64
 
 from testbotOnlyGroq import askGroqWhichTable
 from dbHelper import connect_to_database

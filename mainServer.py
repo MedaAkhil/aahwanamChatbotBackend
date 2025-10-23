@@ -135,7 +135,7 @@ def chat():
 
 
 @app.route("/chatWordPressApp", methods=["POST"])
-def chat():
+def chatWordPressApp():
     data = dict()
     data = request.get_json()
     print(f"Bot Active: {data.get("userPrompt", "")}")

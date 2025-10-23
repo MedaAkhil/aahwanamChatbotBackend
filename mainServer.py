@@ -209,8 +209,8 @@ def chatWordPressApp():
     # chat_history[user_id].append("Bot: " + BotResponse)
     print("user Prompt"+prompt)
     print("\n\n\n\nThis is the bot response: "+BotResponse)
-    print("\n\n\n\nThis is the User chat Context: ".join(messages))
     messages.append("ChatBot: " + BotResponse)
+    print("\n\n\n\nThis is the User chat Context: ".join(messages))
     return jsonify({"reply": BotResponse})
 
 

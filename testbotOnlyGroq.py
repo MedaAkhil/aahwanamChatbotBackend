@@ -7,7 +7,7 @@ load_dotenv()
 
 # Initialize OpenAI with your Groq endpoint and key
 client = OpenAI(
-    api_key="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",
+    api_key=os.getenv("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1"
 )
 def sendGroqRequest(prompt, systemPrompt, model="llama3-8b-8192"):

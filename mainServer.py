@@ -8,8 +8,8 @@ from datetime import datetime
 # import base64
 
 from testbotOnlyGroq import askGroqWhichTable
-from dbHelper import connect_to_database
-import dbHelper
+# from dbHelper import connect_to_database
+# import dbHelper
 import dbHelper_mock
 import testbotOnlyGroq
 

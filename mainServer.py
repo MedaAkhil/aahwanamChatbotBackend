@@ -8,8 +8,8 @@ from datetime import datetime
 # import base64
 
 from testbotOnlyGroq import askGroqWhichTable
-# from dbHelper import connect_to_database
-# import dbHelper
+from dbHelper import connect_to_database
+import dbHelper
 import dbHelper_mock
 import testbotOnlyGroq
 
@@ -157,4 +157,4 @@ def chatdummy():
 #         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host:'0.0.0.0', port = int(os.environ.get('PORT', 5000)),debug = False)

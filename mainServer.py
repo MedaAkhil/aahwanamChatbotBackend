@@ -127,6 +127,101 @@ def chat():
     messages.append("ChatBot: " + BotResponse)
     return jsonify({"reply": BotResponse})
 
+
+
+
+
+
+
+
+@app.route("/chatWordPressApp", methods=["POST"])
+def chat():
+    data = dict()
+    data = request.get_json()
+    print(f"Bot Active: {data.get("userPrompt", "")}")
+    prompt = data.get("userPrompt", "")
+    user_id = data.get("user_id", "default_user")
+    # print(prompt)
+
+    messages.append("User: " + prompt)
+    print(f"Client Topic: {messages}")
+    # if user_id not in chat_history:
+    #     chat_history[user_id] = []
+    # chat_history[user_id].append("User: " + prompt)
+
+    realtimedata = []
+    table = askGroqWhichTable(prompt, model='llama-3.3-70b-versatile')
+
+    if '1' in table:
+        realtimedata.append(dbHelper_mock.print_joined_service_categories())
+    if '2' in table:
+        realtimedata.append(dbHelper_mock.getServicePackages())
+    if '3' in table:
+        cityorstste = table.split('^')[-1].strip('] ')
+        realtimedata.append(dbHelper_mock.getservicesbylocation(cityorstste))
+
+    # context_chunks = similaritySearchPineConeQueryHelper(pcahwanamContextIndex, prompt)
+    # context_chunks = "Unable te fetch context from the pinecone"
+    context_chunks = "aahwanam provides services for different events like Birthday, marriage, family functions etc"
+    context_text = "\n".join(context_chunks)
+
+    SystemPromptForFinalLLMRequestprompt = f"""
+    **You are a customer support chatbot for the Aahwanam event-planning app You main Work is to give the user a best and budget friendly service and if any question asked answer them.**
+    Keep answers **short, minimal text, and mostly in list format**.
+
+    This is the context data for the Aahwanam platform => {context_text}
+
+    This is the realtime data about the services or budget-friendly packages offered => {realtimedata}
+    Fist you need to gather the below information from the user:
+    ->event Type or the event name?
+    ->Date, Time and Duration Of the Event?
+    ->What Services Required?
+
+    **collect this info first by asking the user this question one by one. dont ask all the question at a time**
+    User CHAT HISTORY: {" | ".join(messages)}
+    User prompt: "{prompt}: Date and Time Of the user Prompt{datetime.now()} YOU SHOULD ONLY CONSIDER THIS WHILE CHECKING IF THE DATE OF THE USER EVENT AND THE DATE OF THE VENDORS IS CORRECTLY THEIR LIKE IF THE USER WANT SERVICE ON A PARTICULAR YOU SHOULD CONSODER THE AVAILABLE DATES OF THE VENDORS TO SUGGEST THE AVAILABLE VENDORS AND THEIR SERVICE"
+
+    use the date and time as reference in case user says any particulars about the events date, time or day.
+
+    **RESPONSE RULES:** 
+    1. Keep REPLIES CONCISE. Avoid long paragraphs.
+    2. If user asks about services, list only **top 4 relevant services** in this format:
+    ^Services
+    &servicename - ₹price - includes
+    &servicename - ₹price - includes
+
+    4. If user asks only about packages, respond:
+    ^EventPackages
+    &packagename - ₹packagePrice - ...
+    &Package - ₹packageprice - ...
+    &package - ₹packageprice - ...
+
+    5. If no services are mentioned, say:
+    "Aahwanam helps you book services like Décor, Photography, Catering, and more for all occasions."
+
+    6. Always end response with 1 short follow-up question to keep conversation going.
+     **At the END OF THE PROMPT GIVE THREE QUICK RESPONSES that the **USER MIGHT ANSWER TO YOU BASED ON YOUR QUESTIONS** so that it can help the user to not type the prompts every time.start the QUICK RESPONSE PROMPT WITH "->" SYMBOL.**
+    9. If irrelevant, say:
+    "Sorry, I don't know about that. Please ask something related to Aahwanam."
+    """
+
+    BotResponse = testbotOnlyGroq.sendGroqRequest(prompt, SystemPromptForFinalLLMRequestprompt, model='llama-3.3-70b-versatile')
+    # chat_history[user_id].append("Bot: " + BotResponse)
+    print("user Prompt"+prompt)
+    print("\n\n\n\nThis is the bot response: "+BotResponse)
+    print("\n\n\n\nThis is the User chat Context: ".join(messages))
+    messages.append(ChatBot: " + BotResponse)
+    return jsonify({"reply": BotResponse})
+
+
+
+
+
+
+
+
+
+
 @app.route("/chatdummy", methods=["POST"])
 def chatdummy():
     res = {"reply":"Hii there \n ->How \n->when \n->where \n chef"}

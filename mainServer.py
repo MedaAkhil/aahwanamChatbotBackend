@@ -6,6 +6,7 @@ import os
 import requests
 from datetime import datetime
 # import base64
+from flask_cors import CORS
 
 from testbotOnlyGroq import askGroqWhichTable
 # from dbHelper import connect_to_database
@@ -24,7 +25,7 @@ import testbotOnlyGroq
 # MYSQL_DB = os.getenv("MYSQL_DATABASE")
 
 app = Flask(__name__)
-
+CORS(app, resources={r"/*": {"origins": "https://marzii.payg-india.com"}})
 # pc = Pinecone(api_key=PINECONE_API_KEY)
 # pcahwanamContextIndex = pc.Index("aahwanamcontext")
 # print("Connected To VectorIndex")

@@ -210,7 +210,7 @@ def chat():
     print("user Prompt"+prompt)
     print("\n\n\n\nThis is the bot response: "+BotResponse)
     print("\n\n\n\nThis is the User chat Context: ".join(messages))
-    messages.append(ChatBot: " + BotResponse)
+    messages.append("ChatBot: " + BotResponse)
     return jsonify({"reply": BotResponse})
 
 

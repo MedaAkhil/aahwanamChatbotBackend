@@ -130,31 +130,31 @@ def chat():
 def chatdummy():
     res = {"reply":"Hii there \n ->How \n->when \n->where \n chef"}
     return res
-@app.route("/imagen", methods=["POST"])
-def imagen():
-    try:
-        data = request.get_json()
-        prompt = data.get("prompt", "")
-        if not prompt:
-            return jsonify({"error": "No prompt provided"}), 400
+# @app.route("/imagen", methods=["POST"])
+# def imagen():
+#     try:
+#         data = request.get_json()
+#         prompt = data.get("prompt", "")
+#         if not prompt:
+#             return jsonify({"error": "No prompt provided"}), 400
 
-        # Call HuggingFace API
-        hf_api_url = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
-        headers = {
-            "Authorization": "Bearer hf_ZGwekUXZpyaQhCydMRLGXWBNvvwZzcHBF",  # Replace with your token
-            "Content-Type": "application/json",
-        }
-        response = requests.post(hf_api_url, headers=headers, json={"inputs": prompt})
+#         # Call HuggingFace API
+#         hf_api_url = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
+#         headers = {
+#             "Authorization": "Bearer hf_ZGwekUXZpyaQhCydMRLGXWBNvvwZzcHBF",  # Replace with your token
+#             "Content-Type": "application/json",
+#         }
+#         response = requests.post(hf_api_url, headers=headers, json={"inputs": prompt})
 
-        if response.status_code == 200:
-            image_bytes = response.content
-            # Convert image to base64 so Flutter can display it easily
-            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-            return jsonify({"image_url": f"data:image/png;base64,{image_base64}"})
-        else:
-            return jsonify({"error": "Image generation failed", "details": response.text}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#         if response.status_code == 200:
+#             image_bytes = response.content
+#             # Convert image to base64 so Flutter can display it easily
+#             image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+#             return jsonify({"image_url": f"data:image/png;base64,{image_base64}"})
+#         else:
+#             return jsonify({"error": "Image generation failed", "details": response.text}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

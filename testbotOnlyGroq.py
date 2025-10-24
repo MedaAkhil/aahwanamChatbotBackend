@@ -7,7 +7,7 @@ from openai import OpenAI
 
 # Initialize OpenAI with your Groq endpoint and key
 client = OpenAI(
-    api_key="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",
+    api_key="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",
     base_url="https://api.groq.com/openai/v1"
 )
 def sendGroqRequest(prompt, systemPrompt, model="llama3-8b-8192"):

@@ -25,7 +25,7 @@ import testbotOnlyGroq
 # MYSQL_DB = os.getenv("MYSQL_DATABASE")
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://marzii.payg-india.com"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 # pc = Pinecone(api_key=PINECONE_API_KEY)
 # pcahwanamContextIndex = pc.Index("aahwanamcontext")
 # print("Connected To VectorIndex")
